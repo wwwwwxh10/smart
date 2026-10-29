@@ -224,3 +224,18 @@
 .no-results-view .no-results-suggestions button{border:1px solid #dce1dd;border-radius:2px;background:#fff;padding:9px 15px;color:#505953;font-size:14px;font-weight:400;cursor:pointer;transition:border-color .18s,background .18s,color .18s}
 .no-results-view .no-results-suggestions button:hover,.no-results-view .no-results-suggestions button:focus-visible{border-color:#178449;background:#f1f8f4;color:#126a3c}
 @media(max-width:900px){.no-results-view{padding:0 16px}.no-results-view .query-heading h1{font-size:20px}.no-results-view .no-results{padding:38px 0 30px}.no-results-view .no-results h3{font-size:16px}.no-results-view .no-results-suggestions{gap:8px;margin-top:24px}}
+
+/* Keep product results on one scrollable row at every screen size. */
+.product-carousel{position:relative;min-width:0}
+.product-grid.product-carousel-track{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:calc((100% - 54px)/4);gap:18px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 0 18px;margin:0}
+.product-grid.product-carousel-track::-webkit-scrollbar{display:none}
+.product-grid.product-carousel-track.five-products{grid-auto-columns:calc((100% - 56px)/5);gap:14px}
+.product-carousel-track>.product-card{min-width:0;scroll-snap-align:start}
+.carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:38px;height:38px;display:grid;place-items:center;border:1px solid #cbd5ce;border-radius:50%;background:#fff;color:#16834b;box-shadow:0 3px 12px #0002;cursor:pointer}
+.carousel-previous{left:-19px}
+.carousel-next{right:-19px}
+.carousel-arrow:disabled{opacity:.4;cursor:default}
+.carousel-arrow:hover:not(:disabled){background:#e7f5ec}
+.carousel-arrow:focus-visible,.product-carousel-track:focus-visible{outline:2px solid #16834b;outline-offset:3px}
+@media(min-width:901px) and (max-width:1180px){.product-grid.product-carousel-track,.product-grid.product-carousel-track.five-products{grid-auto-columns:calc((100% - 36px)/3);gap:18px}}
+@media(max-width:900px){.product-grid.product-carousel-track,.product-grid.product-carousel-track.five-products{grid-auto-columns:82vw;gap:12px;align-items:start}.carousel-arrow{width:32px;height:32px}.carousel-previous{left:-12px}.carousel-next{right:-12px}}

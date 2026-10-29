@@ -359,6 +359,86 @@ function ProductCard({ p }: { p: Product }) {
     </article>
   );
 }
+function ProductCarousel({ items }: { items: Product[] }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ previous: false, next: false });
+  const itemKey = items.map((p) => p.name).join("|");
+
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollLeft = 0;
+    const updateEdges = () =>
+      setEdges({
+        previous: track.scrollLeft > 2,
+        next: track.scrollLeft + track.clientWidth < track.scrollWidth - 2,
+      });
+    updateEdges();
+    const observer = new ResizeObserver(updateEdges);
+    observer.observe(track);
+    track.addEventListener("scroll", updateEdges, { passive: true });
+    return () => {
+      observer.disconnect();
+      track.removeEventListener("scroll", updateEdges);
+    };
+  }, [itemKey]);
+
+  const move = (direction: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const card = track.firstElementChild as HTMLElement | null;
+    const gap = parseFloat(getComputedStyle(track).columnGap || "0");
+    const step = (card?.getBoundingClientRect().width || track.clientWidth) + gap;
+    const visibleCards = Math.max(1, Math.floor((track.clientWidth + gap + 1) / step));
+    track.scrollBy({
+      left: direction * step * visibleCards,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
+  };
+
+  return (
+    <div className="product-carousel primary-products">
+      <div
+        ref={trackRef}
+        className={`product-grid product-carousel-track${items.length === 5 ? " five-products" : ""}`}
+        role="region"
+        aria-label="Recommended products"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+            event.preventDefault();
+            move(event.key === "ArrowLeft" ? -1 : 1);
+          }
+        }}
+      >
+        {items.map((p) => <ProductCard p={p} key={p.name} />)}
+      </div>
+      {(edges.previous || edges.next) && (
+        <>
+          <button
+            className="carousel-arrow carousel-previous"
+            aria-label="Previous products"
+            disabled={!edges.previous}
+            onClick={() => move(-1)}
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            className="carousel-arrow carousel-next"
+            aria-label="Next products"
+            disabled={!edges.next}
+            onClick={() => move(1)}
+          >
+            <ChevronRight size={22} />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
 function SourceLink({ source }: { source: { name: string; url: string } }) {
   return (
     <span className="source-wrap">
@@ -797,30 +877,14 @@ function SearchLayer({ close }: { close: () => void }) {
           Regular Load
         </button>
       </div>
-      <div className="product-grid primary-products">
-        {recommended
-          .filter((x) => x.category === loadTab)
-          .map((p) => (
-            <ProductCard p={p} key={p.name} />
-          ))}
-      </div>
+      <ProductCarousel items={recommended.filter((x) => x.category === loadTab)} />
     </div>
   ) : specificLoadCategory ? (
     <div className="load-results">
-      <div className="product-grid primary-products">
-        {recommended.map((p) => (
-          <ProductCard p={p} key={p.name} />
-        ))}
-      </div>
+      <ProductCarousel items={recommended} />
     </div>
   ) : (
-    <div
-      className={`product-grid primary-products${recommended.length === 5 ? " five-products" : ""}`}
-    >
-      {recommended.map((p) => (
-        <ProductCard p={p} key={p.name} />
-      ))}
-    </div>
+    <ProductCarousel items={recommended} />
   );
   const empty = (
     <div className="empty-search">
